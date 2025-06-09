@@ -24,10 +24,15 @@ func AccessLog(l zerolog.Logger) func(handler http.Handler) http.Handler {
 
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestID := r.Header.Get(requestIdHeader)
-
 			if err := uuid.Validate(requestID); err != nil {
 				requestID = uuid.New().String()
 				r.Header.Add(requestIdHeader, requestID)
+			}
+
+			parentRequestID := r.Header.Get(traceParentHeader)
+			if err := uuid.Validate(parentRequestID); err != nil {
+				parentRequestID = ""
+				r.Header.Add(traceParentHeader, parentRequestID)
 			}
 
 			w.Header().Add(requestIdHeader, requestID)
@@ -55,6 +60,6 @@ func (a accessLogger) Log(record accesslog.LogRecord) {
 		Str("http_method", record.Method).
 		Int("http_status", record.Status).
 		Str("traceparent", record.RequestHeader.Get(traceParentHeader)).
-		Str("request_id", record.RequestHeader.Get("X-Request-ID")).
+		Str("request_id", record.RequestHeader.Get(requestIdHeader)).
 		Send()
 }
