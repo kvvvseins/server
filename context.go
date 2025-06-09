@@ -11,6 +11,7 @@ type key int
 const (
 	keyRequestID key = iota
 	keyLogger
+	keyParentRequestID
 )
 
 func GetRequestID(ctx context.Context) string {
