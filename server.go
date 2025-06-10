@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 )
 
@@ -34,7 +35,8 @@ func NewServer(port int, logLevel slog.Level) (*chi.Mux, *http.Server) {
 	return router, server
 }
 
-// AddRequestIDToTraceParent добавляет текущий request id в parent
-func AddRequestIDToTraceParent(header http.Header, requestID string) {
-	header.Set(traceParentHeader, requestID)
+// AddRequestIDToRequestHeader добавляет request id в заголовки и родительский request id.
+func AddRequestIDToRequestHeader(header http.Header, parentRequestID string) {
+	header.Set(traceParentHeader, parentRequestID)
+	header.Set(requestIdHeader, uuid.NewString())
 }
