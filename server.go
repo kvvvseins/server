@@ -38,3 +38,8 @@ func NewServer(port int, logLevel slog.Level) (*chi.Mux, *http.Server) {
 func AddRequestIDToTraceParent(header http.Header, requestID string) {
 	header.Set(traceParentHeader, requestID)
 }
+
+// AddRequestID добавляет request id в заголовки
+func AddRequestID(header http.Header, requestID string) {
+	header.Set(requestIdHeader, requestID)
+}
