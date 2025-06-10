@@ -37,7 +37,10 @@ func AccessLog(l zerolog.Logger) func(handler http.Handler) http.Handler {
 
 			w.Header().Add(requestIdHeader, requestID)
 
-			handler.ServeHTTP(w, r.WithContext(context.WithValue(r.Context(), keyRequestID, requestID)))
+			ctx := context.WithValue(r.Context(), keyRequestID, requestID)
+			ctx = context.WithValue(ctx, keyParentRequestID, parentRequestID)
+
+			handler.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
 }
