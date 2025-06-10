@@ -12,7 +12,7 @@ import (
 const (
 	traceParentHeader = "traceparent"
 	rfc3339Milli      = "2006-01-02T15:04:05.999Z07:00"
-	requestIdHeader   = "X-Request-ID"
+	requestIdHeader   = "REQD"
 )
 
 // AccessLog middleware для формирования access-логов в нужном формате.
@@ -25,8 +25,9 @@ func AccessLog(l zerolog.Logger) func(handler http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			requestID := r.Header.Get(requestIdHeader)
 			if err := uuid.Validate(requestID); err != nil {
-				requestID = uuid.New().String()
-				r.Header.Add(requestIdHeader, requestID)
+				http.Error(w, "Заголовок "+requestIdHeader+" обязателен (UUID)", http.StatusBadRequest)
+
+				return
 			}
 
 			parentRequestID := r.Header.Get(traceParentHeader)
@@ -35,7 +36,11 @@ func AccessLog(l zerolog.Logger) func(handler http.Handler) http.Handler {
 				r.Header.Add(traceParentHeader, parentRequestID)
 			}
 
-			w.Header().Add(requestIdHeader, requestID)
+			if requestID == parentRequestID {
+				http.Error(w, "Заголовки "+requestIdHeader+" и "+traceParentHeader+" должны отличаться", http.StatusBadRequest)
+
+				return
+			}
 
 			ctx := context.WithValue(r.Context(), keyRequestID, requestID)
 			ctx = context.WithValue(ctx, keyParentRequestID, parentRequestID)
