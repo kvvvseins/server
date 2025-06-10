@@ -33,3 +33,8 @@ func NewServer(port int, logLevel slog.Level) (*chi.Mux, *http.Server) {
 
 	return router, server
 }
+
+// AddParentRequestID добавляет текущий request id в parent
+func AddParentRequestID(header http.Header) {
+	header.Set(traceParentHeader, header.Get(requestIdHeader))
+}
