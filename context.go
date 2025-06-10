@@ -11,6 +11,7 @@ type key int
 const (
 	keyRequestID key = iota
 	keyLogger
+	keyParentRequestID
 )
 
 func GetRequestID(ctx context.Context) string {
@@ -20,17 +21,28 @@ func GetRequestID(ctx context.Context) string {
 
 	slog.Warn("Not found request_id in context")
 
-	return "unknown_request_id"
+	return ""
 }
 
+func GetParentRequestID(ctx context.Context) string {
+	if parentRequestID, ok := ctx.Value(keyParentRequestID).(string); ok {
+		return parentRequestID
+	}
+
+	return ""
+}
+
+// GetLogger Получить логер
 func GetLogger(ctx context.Context) *slog.Logger {
 	if logger, ok := ctx.Value(keyLogger).(*slog.Logger); ok {
 		return logger
 	}
 
-	slog.Warn("Not found logger in context")
-
-	return slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelWarn,
+	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
 	}))
+
+	logger.Warn("Not found logger in context")
+
+	return logger
 }
